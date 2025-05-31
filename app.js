@@ -6,7 +6,6 @@ const admin = require("firebase-admin");
 const app = express();
 app.options('*', cors());
 app.use(cors());
-app.use(express.json());
 
 // Firebase setup
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -119,6 +118,7 @@ app.delete("/api/businesses/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete business", details: error.message });
   }
 });
+app.use(express.json());
 
 // Start server
 const PORT = 4000;

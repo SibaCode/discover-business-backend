@@ -61,6 +61,7 @@ const uploadFields = upload.fields([
 app.post("/api/businesses", uploadFields, async (req, res) => {
   try {
     const newBusiness = req.body;
+    console.log("Received data:", req.body);  // <-- DEBUG LOG
 
     if (req.files['image']) {
       newBusiness.imageUrl = await uploadFileToFirebase(req.files['image'][0]);
