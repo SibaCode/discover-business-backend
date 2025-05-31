@@ -39,21 +39,23 @@ const db = admin.firestore();
 //     res.status(500).json({ error: "Failed to create business", details: error.message });
 //   }
 // });
+const multer = require('multer');
+
 app.post("/api/businesses", upload.none(), async (req, res) => {
   try {
-    const newBusiness = req.body;
-
-    // Convert strings back to arrays/JSON if needed
-    if (newBusiness.productImages && typeof newBusiness.productImages === 'string') {
-      try {
-        newBusiness.productImages = JSON.parse(newBusiness.productImages);
-      } catch (e) {
-        newBusiness.productImages = [];
-      }
-    }
-
-    // Hardcoded placeholder image
-    newBusiness.imageUrl = "SibaTest";
+    const newBusiness = {
+      name: req.body.name,
+      industry: req.body.industry,
+      description: req.body.description,
+      location: req.body.location,
+      contactPerson: req.body.contactPerson,
+      contactNumber: req.body.contactNumber,
+      email: req.body.email,
+      facebook: req.body.facebook,
+      products: req.body.products,
+      imageUrl: req.body.imageUrl || "https://via.placeholder.com/150",
+      productImages: JSON.parse(req.body.productImages || "[]")
+    };
 
     const docRef = await db.collection("businesses").add(newBusiness);
     res.status(201).json({ message: "Business created successfully", id: docRef.id, ...newBusiness });
