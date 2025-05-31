@@ -6,16 +6,15 @@ const multer = require("multer");
 const upload = multer(); // memory storage by default
 
 const app = express();
-const corsOptions = {
-  origin: 'https://discover-business.vercel.app', // 👈 your frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+
+// Middleware setup — TOP of file
+app.use(cors({
+  origin: 'https://discover-business.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
-};
-
-app.use(cors(corsOptions));
-
-
-// your routes...
+}));
+app.options('*', cors()); // ✅ respond to preflight (OPTIONS) requests
+app.use(express.json()); // ✅ body parser BEFORE routes
 
 // Firebase setup
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -26,21 +25,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// CREATE - Add new business without image upload
-// app.post("/api/businesses", async (req, res) => {
-//   try {
-//     const newBusiness = req.body;
-//     newBusiness.imageUrl = "SibaTest";
-//     newBusiness.productImages = ["SibaTest"];
-
-//     const docRef = await db.collection("businesses").add(newBusiness);
-//     res.status(201).json({ message: "Business created successfully", id: docRef.id, ...newBusiness });
-//   } catch (error) {
-//     res.status(500).json({ error: "Failed to create business", details: error.message });
-//   }
-// });
-const multer = require('multer');
-
+// CREATE
 app.post("/api/businesses", upload.none(), async (req, res) => {
   try {
     const newBusiness = {
@@ -63,7 +48,6 @@ app.post("/api/businesses", upload.none(), async (req, res) => {
     res.status(500).json({ error: "Failed to create business", details: error.message });
   }
 });
-
 
 // READ ALL
 app.get("/api/businesses", async (req, res) => {
@@ -139,7 +123,6 @@ app.delete("/api/businesses/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete business", details: error.message });
   }
 });
-app.use(express.json());
 
 // Start server
 const PORT = 4000;
