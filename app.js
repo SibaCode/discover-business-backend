@@ -3,6 +3,26 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const admin = require('firebase-admin');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Multer-Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'discover-business',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    transformation: [{ width: 800, height: 800, crop: 'limit' }]
+  },
+});
+const upload = multer({ storage });
 
 const app = express();
 app.options('*', cors());
@@ -29,9 +49,6 @@ app.use(cors({
 app.use(express.json());
 
 // Multer memory storage (buffer)
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
 // Multer fields for file uploads
 const uploadFields = upload.fields([
   { name: 'image', maxCount: 1 },
