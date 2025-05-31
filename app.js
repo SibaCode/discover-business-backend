@@ -18,11 +18,29 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 // CREATE - Add new business without image upload
+// app.post("/api/businesses", async (req, res) => {
+//   try {
+//     const newBusiness = req.body;
+//     newBusiness.imageUrl = "SibaTest";
+//     newBusiness.productImages = ["SibaTest"];
+
+//     const docRef = await db.collection("businesses").add(newBusiness);
+//     res.status(201).json({ message: "Business created successfully", id: docRef.id, ...newBusiness });
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to create business", details: error.message });
+//   }
+// });
 app.post("/api/businesses", async (req, res) => {
   try {
     const newBusiness = req.body;
-    newBusiness.imageUrl = "SibaTest";
-    newBusiness.productImages = ["SibaTest"];
+
+    if (req.files['image']) {
+      newBusiness.imageUrl = "SibaTest";
+       }
+
+    if (req.files['productImages']) {
+      newBusiness.productImages = ["SibaTest"];   
+    }
 
     const docRef = await db.collection("businesses").add(newBusiness);
     res.status(201).json({ message: "Business created successfully", id: docRef.id, ...newBusiness });
@@ -30,7 +48,6 @@ app.post("/api/businesses", async (req, res) => {
     res.status(500).json({ error: "Failed to create business", details: error.message });
   }
 });
-
 // READ ALL
 app.get("/api/businesses", async (req, res) => {
   try {
