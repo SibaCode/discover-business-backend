@@ -6,11 +6,13 @@ const multer = require("multer");
 const upload = multer(); // memory storage by default
 
 const app = express();
-app.options('*', cors());
-app.use(cors({
-  origin: "https://discover-business.vercel.app"
-}));
+const corsOptions = {
+  origin: 'https://discover-business.vercel.app', // 👈 your frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+};
 
+app.use(cors(corsOptions));
 
 
 // your routes...
