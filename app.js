@@ -1,78 +1,28 @@
 require('dotenv').config();
 const express = require('express');
-const multer = require('multer');
 const cors = require('cors');
-const admin = require('firebase-admin');
+const admin = require("firebase-admin");
 
 const app = express();
 app.options('*', cors());
+app.use(cors());
+app.use(express.json());
 
 // Firebase setup
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    // storageBucket: process.env.FIREBASE_STORAGE_BUCKET // add your bucket name here in env var
+    credential: admin.credential.cert(serviceAccount)
   });
 }
-
 const db = admin.firestore();
-// const bucket = admin.storage().bucket();
 
-app.use(cors({
-  origin: 'https://discover-business.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-
-app.use(express.json());
-
-// Multer memory storage (buffer)
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Multer fields for file uploads
-const uploadFields = upload.fields([
-  { name: 'image', maxCount: 1 },
-  { name: 'productImages', maxCount: 10 }
-]);
-
-// Helper: upload file buffer to Firebase Storage
-// async function uploadFileToFirebase(file) {
-//   const blob = bucket.file(Date.now() + '-' + file.originalname);
-//   const blobStream = blob.createWriteStream({
-//     metadata: {
-//       contentType: file.mimetype
-//     }
-//   });
-
-//   return new Promise((resolve, reject) => {
-//     blobStream.on('error', (err) => reject(err));
-//     blobStream.on('finish', () => {
-//       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-//       resolve(publicUrl);
-//     });
-//     blobStream.end(file.buffer);
-//   });
-// }
-
-// CREATE
-app.post("/api/businesses", uploadFields, async (req, res) => {
+// CREATE - Add new business without image upload
+app.post("/api/businesses", async (req, res) => {
   try {
     const newBusiness = req.body;
-
-    if (req.files['image']) {
-      newBusiness.imageUrl = await uploadFileToFirebase(req.files['image'][0]);
-    }
-
-    if (req.files['productImages']) {
-      newBusiness.productImages = [];
-      for (const file of req.files['productImages']) {
-        const url = await uploadFileToFirebase(file);
-        newBusiness.productImages.push(url);
-      }
-    }
+    newBusiness.imageUrl = "SibaTest";
+    newBusiness.productImages = ["SibaTest"];
 
     const docRef = await db.collection("businesses").add(newBusiness);
     res.status(201).json({ message: "Business created successfully", id: docRef.id, ...newBusiness });
@@ -92,7 +42,7 @@ app.get("/api/businesses", async (req, res) => {
   }
 });
 
-// READ ONE
+// READ SINGLE
 app.get("/api/businesses/:id", async (req, res) => {
   try {
     const businessRef = db.collection("businesses").doc(req.params.id);
@@ -106,8 +56,20 @@ app.get("/api/businesses/:id", async (req, res) => {
   }
 });
 
+// READ EVENTS
+app.get("/api/events", async (req, res) => {
+  try {
+    const eventsRef = db.collection('events');
+    const snapshot = await eventsRef.get();
+    const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch events' });
+  }
+});
+
 // UPDATE
-app.put("/api/businesses/:id", uploadFields, async (req, res) => {
+app.put("/api/businesses/:id", async (req, res) => {
   try {
     const businessRef = db.collection("businesses").doc(req.params.id);
     const doc = await businessRef.get();
@@ -116,18 +78,8 @@ app.put("/api/businesses/:id", uploadFields, async (req, res) => {
     }
 
     const updateData = req.body;
-
-    if (req.files['image']) {
-      updateData.imageUrl = await uploadFileToFirebase(req.files['image'][0]);
-    }
-
-    if (req.files['productImages']) {
-      updateData.productImages = [];
-      for (const file of req.files['productImages']) {
-        const url = await uploadFileToFirebase(file);
-        updateData.productImages.push(url);
-      }
-    }
+    updateData.imageUrl = "SibaTest";
+    updateData.productImages = ["SibaTest"];
 
     await businessRef.update(updateData);
     const updatedDoc = await businessRef.get();
@@ -136,11 +88,8 @@ app.put("/api/businesses/:id", uploadFields, async (req, res) => {
     res.status(500).json({ error: "Failed to update business", details: error.message });
   }
 });
-app.get('/', (req, res) => {
-  res.send('API is up and running!');
-});
 
-//// DELETE
+// DELETE
 app.delete("/api/businesses/:id", async (req, res) => {
   try {
     const businessRef = db.collection("businesses").doc(req.params.id);
@@ -157,22 +106,8 @@ app.delete("/api/businesses/:id", async (req, res) => {
   }
 });
 
-// EVENTS GET example
-app.get("/api/events", async (req, res) => {
-  try {
-    const eventsRef = db.collection('events');
-    const snapshot = await eventsRef.get();
-    const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(events);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch events' });
-  }
-});
-
-// EXPORT app for Vercel serverless
-module.exports = app;
-const PORT = process.env.PORT || 5000;
+// Start server
+const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
