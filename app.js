@@ -34,13 +34,9 @@ app.post("/api/businesses", async (req, res) => {
   try {
     const newBusiness = req.body;
 
-    if (req.files['image']) {
-      newBusiness.imageUrl = "SibaTest";
-       }
-
-    if (req.files['productImages']) {
-      newBusiness.productImages = ["SibaTest"];   
-    }
+    // Hardcoded placeholder values
+    newBusiness.imageUrl = "SibaTest";
+    newBusiness.productImages = ["SibaTest"];
 
     const docRef = await db.collection("businesses").add(newBusiness);
     res.status(201).json({ message: "Business created successfully", id: docRef.id, ...newBusiness });
@@ -48,6 +44,7 @@ app.post("/api/businesses", async (req, res) => {
     res.status(500).json({ error: "Failed to create business", details: error.message });
   }
 });
+
 // READ ALL
 app.get("/api/businesses", async (req, res) => {
   try {
