@@ -7,7 +7,13 @@ const upload = multer(); // memory storage by default
 
 const app = express();
 app.options('*', cors());
-app.use(cors());
+app.use(cors({
+  origin: "https://discover-business.vercel.app"
+}));
+
+
+
+// your routes...
 
 // Firebase setup
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
