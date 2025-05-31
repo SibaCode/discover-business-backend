@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const admin = require("firebase-admin");
+const multer = require("multer");
+const upload = multer(); // memory storage by default
 
 const app = express();
 app.options('*', cors());
@@ -29,13 +31,21 @@ const db = admin.firestore();
 //     res.status(500).json({ error: "Failed to create business", details: error.message });
 //   }
 // });
-app.post("/api/businesses", async (req, res) => {
+app.post("/api/businesses", upload.none(), async (req, res) => {
   try {
     const newBusiness = req.body;
 
-    // Hardcoded placeholder values
+    // Convert strings back to arrays/JSON if needed
+    if (newBusiness.productImages && typeof newBusiness.productImages === 'string') {
+      try {
+        newBusiness.productImages = JSON.parse(newBusiness.productImages);
+      } catch (e) {
+        newBusiness.productImages = [];
+      }
+    }
+
+    // Hardcoded placeholder image
     newBusiness.imageUrl = "SibaTest";
-    newBusiness.productImages = ["SibaTest"];
 
     const docRef = await db.collection("businesses").add(newBusiness);
     res.status(201).json({ message: "Business created successfully", id: docRef.id, ...newBusiness });
@@ -43,6 +53,7 @@ app.post("/api/businesses", async (req, res) => {
     res.status(500).json({ error: "Failed to create business", details: error.message });
   }
 });
+
 
 // READ ALL
 app.get("/api/businesses", async (req, res) => {
