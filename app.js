@@ -140,7 +140,7 @@ app.get('/', (req, res) => {
   res.send('API is up and running!');
 });
 
-// DELETE
+//// DELETE
 app.delete("/api/businesses/:id", async (req, res) => {
   try {
     const businessRef = db.collection("businesses").doc(req.params.id);
